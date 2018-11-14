@@ -1,0 +1,137 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "realworld-backend.fullname" . }}
+  labels:
+    app: {{ template "realworld-backend.name" . }}
+    helm.sh/chart: {{ template "realworld-backend.chart" . }}
+    release: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ index .Values "realworld-backend" "replicaCount" }}
+  selector:
+    matchLabels:
+      app: {{ template "realworld-backend.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "realworld-backend.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      volumes:
+        - name: scripts
+          configMap:
+            defaultMode: 0700
+            name: {{ template "realworld-backend.fullname" . }}-scripts
+      initContainers:
+        - name: configure-db
+          image: {{ .Values.mongodb.image.repository }}:{{ .Values.mongodb.image.tag }}
+          imagePullPolicy: {{ .Values.mongodb.image.pullPolicy }}
+          restartPolicy: Never
+          env:
+            - name: MONGODB_HOST
+              value: {{ template "realworld-backend.mongodb.fullname" . }}
+            - name: MONGODB_PORT
+              value: {{ .Values.mongodb.port | quote }}
+            - name: ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ template "realworld-backend.mongodb.adminSecret" . }}"
+                  key: user
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ template "realworld-backend.mongodb.adminSecret" . }}"
+                  key: password
+            - name: DATABASE
+              value: {{ index .Values "realworld-backend" "dbConfig" "database" }}
+            - name: DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ template "realworld-backend.dbSecret" . }}"
+                  key: username
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ template "realworld-backend.dbSecret" . }}"
+                  key: password
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+            # Add SSL support
+          command: ["/bin/bash", "-c", "/scripts/setup_user.sh"]
+      containers:
+        - name: {{ template "realworld-backend.name" . }}
+      {{- $image_info := index .Values "realworld-backend" "image" }}
+          image: "{{ $image_info.repository }}:{{ $image_info.tag }}"
+          imagePullPolicy: {{ $image_info.pullPolicy }}
+          env:
+            - name: NODE_ENV
+              value: {{ index .Values "realworld-backend" "env" }}
+            - name: APP_PORT
+              value: {{ index .Values "realworld-backend" "appPort" | quote }}
+            - name: APP_SECRET
+              value: {{ index .Values "realworld-backend" "secret" }}
+            - name: DB_HOSTNAME
+              value: {{ template "realworld-backend.mongodb.fullname" . }}
+            - name: DB_PORT
+              value: {{ .Values.mongodb.port | quote }}
+            - name: DB_NAME
+              value: {{ index .Values "realworld-backend" "dbConfig" "database" }}
+            - name: DB_ENABLE_AUTH
+              value: {{ .Values.mongodb.auth.enabled | quote }}
+            - name: DB_LOG_LEVEL
+              value: {{ index .Values "realworld-backend" "dbConfig" "log_level" }}
+          {{- if .Values.mongodb.auth.enabled }}
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ template "realworld-backend.dbSecret" . }}"
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ template "realworld-backend.dbSecret" . }}"
+                  key: password
+          {{- end }}
+            - name: DB_ENABLE_SSL
+              value: {{ index .Values "realworld-backend" "dbConfig" "ssl" "enabled" | quote }}
+            {{/*
+            if DB_ENABLE_SSL
+            - name: DB_SSL_KEY_PATH
+              valueFrom: {{ .Values.realworld-backend.dbConfig.ssl.key }}
+            - name: DB_SSL_CERT_PATH
+              valueFrom: {{ .Values.realworld-backend.dbConfig.ssl.enabled }}
+            - name: DB_SSL_CA_PATH
+              valueFrom: {{ .Values.realworld-backend.dbConfig.ssl.enabled }}
+              */}}
+          ports:
+            - name: http
+              containerPort: {{ index .Values "realworld-backend" "appPort" }}
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+              timeoutSeconds: 10
+              initialDelaySeconds: 120
+          readinessProbe:
+            httpGet:
+              path: /api/status
+              port: http
+              timeoutSeconds: 10
+              initialDelaySeconds: 120
+          resources:
+{{ toYaml (index .Values "realworld-backend" "resources") | indent 12 }}
+    {{- with index .Values "realworld-backend" "nodeSelector" }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with index .Values "realworld-backend" "affinity" }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with index .Values "realworld-backend" "tolerations" }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}

@@ -1,0 +1,12 @@
+apiVersion: v1
+appVersion: "1.0"
+description: RealWorld App Backend
+# home: < home_url >
+# icon: < icon_url >
+maintainers:
+- name: Nikolai Iurin
+  email: yurinnick93@gmail.com
+name: realworld-backend
+sources:
+- https://github.com/yurinnick/node-express-realworld-example-app
+version: 1.0

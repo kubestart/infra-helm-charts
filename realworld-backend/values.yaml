@@ -1,0 +1,83 @@
+
+env: prod
+appPort: 3000
+nameOverride: ""
+fullnameOverride: ""
+replicaCount: 1
+secret: aejeeSeir2
+dbConfig:
+  username: nodeapp-user
+  password: nodeapp-password
+  # existingDBSecret:
+  database: nodeappdb
+  log_level: error
+  ssl:
+    enabled: false
+    # key: ""
+    # cert: ""
+    # CA: ""
+image:
+  repository: org/realworld-backend
+  tag: stable
+  pullPolicy: IfNotPresent
+service:
+  type: ClusterIP
+  port: 80
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  # requests:
+  #  cpu: 100m
+  #  memory: 128Mi
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  path: /api
+  hosts:
+    - realworld.localhost
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+# MongoDB dependency
+mongodb:
+  replicas: 1
+  auth:
+    enabled: true
+    adminUser: admin
+    adminPassword: Ed0iex1shieB
+    key: |
+      p/IdvDNr4paBz9u4YQTJj/2Xd31WYfykNFohX4I0zUjCuERmKtUkIvP5nxDoN9tt
+      ZYhEaLCWjTTNby72zm0qyA33b2/iAh0lndWXxxBn8ez5Z1beY+fJXlPLivDVrkm8
+      WEWhvwqMxXPnMgsBuvymebhGMcFAmvmrhua45QEj/0YkZAdQu5bsQSqu8FAOgL7f
+      J2QLe5sbCXIaeEoqVvhJbrBWxPByWg8PtW9ApGtvikkQE6z234xlWSeFapDIw0by
+      ZxtyB7SaMVzmCcU5XSZ2elz/8mWca9ONPKYuYh5XSl7+XJl57am6viz4V6fUAny7
+      4a/baU8uXLaMmm5AXjPjVfbR55fYqxJgfbNgKOl5Ja5TvpVLBNQzwzDUNK13z/Zz
+      wZRBgDfsfS3CSrzjczrTb1Y1JZj5M7845To4nOuIY0tBhYG5ZKSePRV+CVuA7S9e
+      bNGmx+BZCv/gnHN/MDvU9ERhanTkunO5HmHJx12aUzrpGaCJ9V30t9N7kLfr8F6I
+      9AiR27QICD4oqrKZ5+Xaf9Ha4hVKzCIsXEZxrHztWCiIZgE8UgZSJAYPJz79LE1C
+      DSg9PYOWnnzTtF4EwD7yBlKM6x2B06KGUEuVsldnAdipZ/RE9Scdf9XG2oa1AJZi
+      Nne+0GsKxHUKDg+Yg1nHMjOZDOys9En7j1grLPeU5pk7NENQmi2G/HPK5SrVERqb
+      WvOJ8f01rjGNIrnTnhMpFdf0n7S9dbqfUeAN2YIgUk9d0j1yDf8OZEn9HjCXrCkT
+      LGSBCB1gYqtPP0Nf6daAvcimmQKYZrQaWmGISWkkFNtQT1wHK8O9WFfCXnMvQDQR
+      aMMlwOg+cdAwJEjMwDgea5p6vmEenkyRrdma0pt/Csk/w6PwA1RKNlGhZ7kU8XBN
+      cvQHjItC7/PQNJBCyMAtretDQmT/4WyzCnLNoW7223fhq/DT94FhVp/EU9AtcNP9
+      w2sVAdiE1fYNZEPNG6jrN1sI6rEUw9zl4ikCHTUyW8ABgvlz
+  persistentVolume:
+    size: 100Mi
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi

@@ -1,0 +1,5 @@
+dependencies:
+- name: mongodb-replicaset
+  repository: alias:stable
+  version: "*"
+  alias: mongodb

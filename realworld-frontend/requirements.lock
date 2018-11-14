@@ -1,0 +1,6 @@
+dependencies:
+- name: realworld-backend
+  repository: file://../realworld-backend
+  version: "1"
+digest: sha256:8783a7c082a82c48359a7d81a6173c6ac6aea003e851acc0a84a618a09dadde8
+generated: 2018-11-13T16:03:28.386218-08:00

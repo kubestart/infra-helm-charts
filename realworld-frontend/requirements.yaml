@@ -1,0 +1,5 @@
+dependencies:
+- name: realworld-backend
+  repository: file://../realworld-backend
+  version: "*"
+  # alias: realworld-backend

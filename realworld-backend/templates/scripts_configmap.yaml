@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: {{ template "realworld-backend.name" . }}
+    chart: {{ template "realworld-backend.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "realworld-backend.fullname" . }}-scripts
+data:
+  setup_user.sh: |
+{{ .Files.Get "scripts/setup_user.sh" | indent 4 }}

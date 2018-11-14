@@ -1,0 +1,22 @@
+# A headless service to create DNS records
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+  labels:
+    app: {{ template "realworld-backend.name" . }}
+    chart: {{ template "realworld-backend.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ include "realworld-backend.fullname" . }}
+spec:
+  type: {{ index .Values "realworld-backend" "service" "type" }}
+  clusterIP:
+  ports:
+    - name: realworld-backend
+      port: {{ index .Values "realworld-backend" "service" "port" }}
+      targetPort: {{ index .Values "realworld-backend" "appPort" }}
+  selector:
+    app: {{ template "realworld-backend.name" . }}
+    release: {{ .Release.Name }}
